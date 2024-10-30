@@ -20,9 +20,11 @@ public class Conexion {
 
             socketServidor = new ServerSocket(PUERTO);
             socketCliente = new Socket();
+            salidaServidor = new DataOutputStream(socketCliente.getOutputStream());
         }
         else{
             socketCliente = new Socket(HOST, PUERTO);
+            salidaCliente = new DataOutputStream(socketCliente.getOutputStream());
         }
     }
 }

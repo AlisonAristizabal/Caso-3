@@ -4,6 +4,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.Key;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -11,6 +12,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import sockets.conexion.Conexion;
 
 public class Cliente extends Conexion{
+
+    private Key llavePublica;
 
     public Cliente() throws IOException {
         super("cliente");
@@ -26,27 +29,23 @@ public class Cliente extends Conexion{
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         return keyFactory.generatePublic(specPublica);
     }
-    
+
     public void startClient() //Método para iniciar el cliente
     {
-        try
-        {
-            //Flujo de datos hacia el servidor
+        try {
+
+            llavePublica = leerArchivoLlavePublica("publicKey.key");
+
+            //Enviar mensaje inicial "SECINIT" al servidor
+            salidaServidor.writeUTF("SECINIT");
+
             salidaServidor = new DataOutputStream(socketCliente.getOutputStream());
+            
+            socketCliente.close();
 
-            //Se enviarán dos mensajes
-            for (int i = 0; i < 2; i++)
-            {
-                //Se escribe en el servidor usando su flujo de datos
-                salidaServidor.writeUTF("Este es el mensaje número " + (i+1) + "\n");
-            }
-
-            socketCliente.close();//Fin de la conexión
-
-        }
-        catch (Exception e)
-        {
-            System.out.println(e.getMessage());
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 }
