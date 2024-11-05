@@ -19,8 +19,9 @@ import sockets.servidor.Servidor;
 
 public class MainServidor {
 
-    public static void main(String[] args) throws IOException
-    {
+    private static volatile boolean isRunning = true; // Variable para controlar la ejecución del servidor
+
+    public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         int opcion;
 
@@ -31,7 +32,7 @@ public class MainServidor {
             System.out.println("3. Salir");
             System.out.print("Seleccione una opción: ");
             opcion = scanner.nextInt();
-            scanner.nextLine(); 
+            scanner.nextLine();
 
             switch (opcion) {
                 case 1:
@@ -42,19 +43,21 @@ public class MainServidor {
                     break;
                 case 3:
                     System.out.println("Saliendo del programa...");
+                    isRunning = false; // Detener el servidor si está corriendo
                     break;
                 default:
                     System.out.println("Opción no válida. Intente de nuevo.");
             }
-        } while (opcion != 4);
+        } while (opcion != 3);
 
         scanner.close();
     }
-    private static void generarParejaLlaves(){
-         try {
+
+    private static void generarParejaLlaves() {
+        try {
             // Generar el par de llaves RSA
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-            keyGen.initialize(1024);  // Llave de 1024 bits
+            keyGen.initialize(1024); // Llave de 1024 bits
             KeyPair pair = keyGen.generateKeyPair();
             PrivateKey privateKey = pair.getPrivate();
             PublicKey publicKey = pair.getPublic();
@@ -69,43 +72,64 @@ public class MainServidor {
             try (FileOutputStream fos = new FileOutputStream("privateKey.key")) {
                 fos.write(privateKey.getEncoded());
                 System.out.println("Llave privada guardada en 'privateKey.key'");
-
-                // Ajustar permisos de la llave privada
                 ajustarPermisosArchivoPrivado("privateKey.key");
-
             }
 
-            // Mensaje para el usuario
             System.out.println("Pareja de llaves generada y guardada exitosamente.");
         } catch (NoSuchAlgorithmException | IOException e) {
             System.err.println("Error generando las llaves: " + e.getMessage());
         }
     }
 
-    // función para ajustar permisos de llaves privadas.
-    private static void ajustarPermisosArchivoPrivado(String pathFile){
+    // Función para ajustar permisos de llaves privadas
+    private static void ajustarPermisosArchivoPrivado(String pathFile) {
         try {
-            // Definir los permisos solo para el propietario (lectura y escritura)
-            Set<PosixFilePermission> permisos = EnumSet.of(
-                PosixFilePermission.OWNER_READ
-            );
-
-            // Aplicar los permisos al archivo de la llave privada
-            Path privateKeyPath = Paths.get(pathFile);
-            Files.setPosixFilePermissions(privateKeyPath, permisos);
-
-            System.out.println("Permisos ajustados correctamente para " + pathFile);
+            String os = System.getProperty("os.name").toLowerCase();
+            if (!os.contains("win")) { // Solo intenta ajustar permisos en sistemas no Windows
+                Set<PosixFilePermission> permisos = EnumSet.of(PosixFilePermission.OWNER_READ);
+                Path privateKeyPath = Paths.get(pathFile);
+                Files.setPosixFilePermissions(privateKeyPath, permisos);
+                System.out.println("Permisos ajustados correctamente para " + pathFile);
+            }
         } catch (IOException e) {
             System.err.println("Error ajustando permisos: " + e.getMessage());
         }
     }
+    
 
-    private static void ejecutarDelegados() throws IOException{
-
-        Servidor serv = new Servidor(); //Se crea el servidor
-
-        System.out.println("Iniciando servidor\n");
-        serv.startServer(); //Se inicia el servidor
-    }
-
+    private static void ejecutarDelegados() throws Exception {
+        Servidor serv = new Servidor(); // Create the server instance
+    
+        // Start a thread for the server to handle client connections
+        Thread serverThread = new Thread(() -> {
+            try {
+                System.out.println("Iniciando servidor\n");
+                serv.startServer(() -> isRunning); // Pass the isRunning supplier to control server shutdown
+            } catch (Exception e) {
+                System.err.println("Error en el servidor: " + e.getMessage());
+            }
+        });
+    
+        serverThread.start();
+    
+        // Thread to control server shutdown
+        new Thread(() -> {
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Escriba 'cerrar' para detener el servidor.");
+            while (isRunning) {
+                String comando = scanner.nextLine();
+                if ("cerrar".equalsIgnoreCase(comando)) {
+                    isRunning = false; // Set isRunning to false to stop the server
+                    try {
+                        serv.closeServer(); // Close the server safely
+                        System.out.println("Servidor detenido.");
+                    } catch (IOException e) {
+                        System.err.println("Error al cerrar el servidor: " + e.getMessage());
+                    }
+                    break;
+                }
+            }
+            scanner.close();
+        }).start();
+    }    
 }

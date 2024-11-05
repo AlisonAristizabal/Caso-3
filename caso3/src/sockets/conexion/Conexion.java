@@ -14,15 +14,12 @@ public class Conexion {
     protected Socket socketCliente;
     protected DataOutputStream salidaServidor, salidaCliente;
 
-    public Conexion(String tipo) throws IOException{
+    public Conexion(String tipo) throws IOException {
 
-        if(tipo.equalsIgnoreCase("servidor")){
-
+        if (tipo.equalsIgnoreCase("servidor")) {
             socketServidor = new ServerSocket(PUERTO);
-            socketCliente = new Socket();
-            salidaServidor = new DataOutputStream(socketCliente.getOutputStream());
-        }
-        else{
+            // No se configura el socketCliente ni el OutputStream del servidor aquí
+        } else {
             socketCliente = new Socket(HOST, PUERTO);
             salidaCliente = new DataOutputStream(socketCliente.getOutputStream());
         }
