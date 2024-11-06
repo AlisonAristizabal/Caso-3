@@ -269,7 +269,7 @@ public class Servidor extends Conexion {
 
         // Construye el comando con la ruta al ejecutable
         String command = "\"" + opensslPath + "\" dhparam -text 1024";
-    
+        
             // Ejecutar el comando
             Process process = Runtime.getRuntime().exec(command);
     
