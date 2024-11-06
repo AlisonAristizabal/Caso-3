@@ -106,10 +106,10 @@ public class Servidor extends Conexion {
             public ClienteHandler(Socket socketCliente) throws Exception {
                 this.entradaCliente = new DataInputStream(socketCliente.getInputStream());
                 this.salidaServidor = new DataOutputStream(socketCliente.getOutputStream());
-                long startDiffi = System.nanoTime();
+                
                 generarClavesDiffieHellman();
-                long endDiffi = System.nanoTime();
-                System.out.println("Tiempo para generar G, P y Gx: " + (endDiffi - startDiffi) + " nanosegundos");
+    
+                
             }
     
             private void generarClavesDiffieHellman() throws Exception {
@@ -172,7 +172,7 @@ public class Servidor extends Conexion {
                     BigInteger gx = ((DHPublicKey) dhKeyPair.getPublic()).getY();
     
                     long endGPx = System.nanoTime();
-                    System.out.println("Tiempo para generar G, P y Gx NO SIGNIFICATIVO: " + (endGPx - startGPx) + " nanosegundos");
+                    System.out.println("Tiempo para generar G, P y Gx: " + (endGPx - startGPx) + " nanosegundos");
     
                     // Firmar los valores G, P y G^x
                     Signature firma = Signature.getInstance("SHA1withRSA");
