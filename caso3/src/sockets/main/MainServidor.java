@@ -97,14 +97,18 @@ public class MainServidor {
     }
     
 
-    private static void ejecutarDelegados() throws Exception {
-        Servidor serv = new Servidor(); // Create the server instance
+    public static void ejecutarDelegados() throws Exception {
+        // Crear instancia del servidor
+        Servidor servidor = new Servidor();
     
-        // Start a thread for the server to handle client connections
+        // Llamar a manejoOpenSSL para inicializar p y g
+        servidor.manejoOpenSSL();
+    
+        // Crea la instancia del servidor y luego inicia el proceso
         Thread serverThread = new Thread(() -> {
             try {
                 System.out.println("Iniciando servidor\n");
-                serv.startServer(() -> isRunning); // Pass the isRunning supplier to control server shutdown
+                servidor.startServer(() -> isRunning); // Iniciar servidor
             } catch (Exception e) {
                 System.err.println("Error en el servidor: " + e.getMessage());
             }
@@ -112,16 +116,16 @@ public class MainServidor {
     
         serverThread.start();
     
-        // Thread to control server shutdown
+        // Lógica para detener el servidor con el comando 'cerrar'
         new Thread(() -> {
             Scanner scanner = new Scanner(System.in);
             System.out.println("Escriba 'cerrar' para detener el servidor.");
             while (isRunning) {
                 String comando = scanner.nextLine();
                 if ("cerrar".equalsIgnoreCase(comando)) {
-                    isRunning = false; // Set isRunning to false to stop the server
+                    isRunning = false; // Para detener el servidor
                     try {
-                        serv.closeServer(); // Close the server safely
+                        servidor.closeServer();
                         System.out.println("Servidor detenido.");
                     } catch (IOException e) {
                         System.err.println("Error al cerrar el servidor: " + e.getMessage());
@@ -131,5 +135,5 @@ public class MainServidor {
             }
             scanner.close();
         }).start();
-    }    
+    }
 }
