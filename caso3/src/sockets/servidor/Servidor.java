@@ -3,6 +3,7 @@ package sockets.servidor;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
@@ -263,7 +264,11 @@ public class Servidor extends Conexion {
     
         public void manejoOpenSSL() throws IOException, InterruptedException{
     
-            String command = "\"C:\\Users\\ASUS1\\OneDrive\\Documentos\\InfraComp\\Caso 3\\OpenSSL-1.1.1h_win32\\openssl.exe\" dhparam -text 1024";
+        String projectDir = Paths.get("").toAbsolutePath().toString(); // Obtiene la ruta absoluta del proyecto actual
+        String opensslPath = projectDir + File.separator + "OpenSSL-1.1.1h_win32" + File.separator + "openssl.exe";
+
+        // Construye el comando con la ruta al ejecutable
+        String command = "\"" + opensslPath + "\" dhparam -text 1024";
     
             // Ejecutar el comando
             Process process = Runtime.getRuntime().exec(command);
