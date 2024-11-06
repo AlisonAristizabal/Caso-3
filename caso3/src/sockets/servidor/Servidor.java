@@ -273,15 +273,14 @@ public class Servidor extends Conexion {
             String line;
             StringBuilder output = new StringBuilder();
     
-            // Almacenar toda la salida para procesarla después
             while ((line = reader.readLine()) != null) {
                 output.append(line).append("\n");
             }
             reader.close();
             process.waitFor();
     
-            // Imprimir la salida completa de OpenSSL para verificar los resultados
-            System.out.println("Salida completa de OpenSSL:\n" + output.toString());
+            //salida completa de OpenSSL para verificar los resultados
+            //System.out.println("Salida completa de OpenSSL:\n" + output.toString());
     
             // Llamar al método de parsing para extraer p y g
             parseOpenSSLOutput(output.toString());
@@ -292,7 +291,7 @@ public class Servidor extends Conexion {
         }
     
         public static void parseOpenSSLOutput(String output) {
-            // Expresión regular para capturar el valor de 'prime' en múltiples líneas
+            // Expresión regular para capturar el valor de 'p'
             Pattern primePattern = Pattern.compile("prime:\\s*((?:[0-9A-Fa-f]{2}:?\\s*)+)", Pattern.MULTILINE);
             Matcher primeMatcher = primePattern.matcher(output);
         
@@ -305,7 +304,7 @@ public class Servidor extends Conexion {
                 System.out.println("No se encontró el valor de p en la salida.");
             }
         
-            // Expresión regular para capturar el valor de 'generator' en una sola línea
+            // Expresión regular para capturar el valor de 'g'
             Pattern generatorPattern = Pattern.compile("generator\\s*:\\s*(\\d+)", Pattern.MULTILINE);
             Matcher generatorMatcher = generatorPattern.matcher(output);
         

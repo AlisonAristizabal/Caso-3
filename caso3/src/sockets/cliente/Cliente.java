@@ -1,12 +1,10 @@
 package sockets.cliente;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -14,11 +12,8 @@ import java.security.MessageDigest;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
-import java.util.Random;
-
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
 import javax.crypto.Mac;
@@ -119,13 +114,13 @@ public class Cliente extends Conexion{
             if (esValida) {
                 System.out.println("Firma verificada: los valores de G, P y G^x son auténticos.");
                 
-                // Continuar con Diffie-Hellman utilizando los valores recibidos
+                //Diffie-Hellman valores recibidos
                 DHParameterSpec dhParams = new DHParameterSpec(p, g);
                 KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("DH");
                 keyPairGen.initialize(dhParams);
                 KeyPair dhKeyPair = keyPairGen.generateKeyPair();
 
-                // Restante lógica de Diffie-Hellman...
+
             } else {
                 System.out.println("Error de verificación: los valores de G, P y G^x no son válidos.");
                 socketCliente.close();
@@ -140,13 +135,13 @@ public class Cliente extends Conexion{
             keyAgree = KeyAgreement.getInstance("DH");
             keyAgree.init(dhKeyPair.getPrivate());
 
-            // Obtener G^y (clave pública del cliente) y enviarla al servidor
+            // Obtener G^y y enviarla al servidor
             byte[] gyBytes = dhKeyPair.getPublic().getEncoded();
             salidaCliente.writeInt(gyBytes.length);
             salidaCliente.write(gyBytes);
 
-            // Ahora ambas partes tienen G^x y G^y, generar la llave secreta compartida
-            BigInteger gxBigInt = new BigInteger(gx.toByteArray()); // Ya tienes `gx` como BigInteger
+            // generar la llave secreta compartida
+            BigInteger gxBigInt = new BigInteger(gx.toByteArray()); 
             DHPublicKeySpec dhPublicSpec = new DHPublicKeySpec(gxBigInt, p, g);
             KeyFactory keyFactory = KeyFactory.getInstance("DH");
             PublicKey serverPublicKey = keyFactory.generatePublic(dhPublicSpec);
